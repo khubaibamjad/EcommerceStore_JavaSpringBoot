@@ -58,7 +58,7 @@ public class ProductController {
         return ResponseEntity.ok(productService.searchProducts(keyword));
     }
 
-    @GetMapping("/category/{categoryid}")
+    @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductDTO>> getByGategory(@PathVariable int categoryId)
     {
         return ResponseEntity.ok(productService.getByCategoryId(categoryId));
