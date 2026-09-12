@@ -10,11 +10,16 @@ import com.example.ecommerce.entity.Product;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.repository.CategoryRepository;
 import com.example.ecommerce.repository.ProductRepository;
+import io.lettuce.core.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
+import java.security.Key;
 import java.util.List;
 
 @Service
@@ -40,6 +45,7 @@ public class ProductService {
         );
     }
 
+    @CachePut(value = "PRODUCT_CACHE", key = "#result.id()")
     public ProductDTO create(CreateProductDTO request) {
         logger.info("Creating product: {}", request.getName());
         Category category = categoryRepository.findById(request.getCategoryID()).orElseThrow(() -> new ResourceNotFoundException("Category with ID:" + request.getCategoryID() + "Not found"));
@@ -61,12 +67,14 @@ public class ProductService {
                 .toList();
     }
 
+    @Cacheable(value = "PRODUCT_CACHE", key = "productId")
     public ProductDTO getByID(int id) {
         logger.info("getting product with :id{}", id);
         Product product = productRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Product not found"));
         return ConvertToDTO(product);
     }
 
+    @CachePut(value = "PRODUCT_CACHE", key = "#result.id()")
     public ProductDTO update(int id, CreateProductDTO request) {
         logger.info("Updating Product with id:{}", id);
         Product product = productRepository.findById(id)
@@ -82,6 +90,7 @@ public class ProductService {
 
     }
 
+    @CacheEvict(value = "PRODUCT_CACHE", key = "productId")
     public void delete (int id)
     {
         logger.info("Deleting the product with id:{}", id);
